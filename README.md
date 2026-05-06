@@ -1,67 +1,40 @@
 # orbit-sys-io-field
 
-`orbit-sys-io-field` treats systems programming as a local verification problem. The R implementation is intentionally narrow, but the fixtures and notes make the behavior explicit.
+`orbit-sys-io-field` keeps a focused R implementation around systems programming. The project goal is to build an R toolkit that studies io behavior through transition tables, with invalid-transition tests and single-node deterministic mode.
 
-## Orbit Sys IO Field Checkpoints
+## Use Case
 
-Treat the compact fixture as the contract and the extended examples as a scratchpad. The code should stay boring enough that a change in behavior is obvious from the test output.
+The project exists to keep a narrow engineering decision visible and testable. For this repo, that decision is how allocation pressure and guard slack should influence a review result.
 
-## What This Is For
+## Orbit Sys IO Field Review Notes
 
-I use this kind of project to make a rule visible before adding more machinery around it. The important part here is not the size of the codebase. It is that the input signals, scoring rule, fixture data, and expected output can all be checked in one sitting.
+The first comparison I would make is `dirty state` against `guard slack` because it shows where the rule is most opinionated.
 
-## Project Layout
+## Highlights
 
-- `tests`: verification harness
-- `fixtures`: compact golden scenarios
-- `examples`: expanded scenario set
-- `metadata`: project constants and verification metadata
-- `docs`: operations and extension notes
-- `scripts`: local verification and audit commands
+- `fixtures/domain_review.csv` adds cases for allocation pressure and dirty state.
+- `metadata/domain-review.json` records the same cases in structured form.
+- `config/review-profile.json` captures the read order and the two review questions.
+- `examples/orbit-sys-io-walkthrough.md` walks through the case spread.
+- The R code includes a review path for `dirty state` and `guard slack`.
+- `docs/field-notes.md` explains the strongest and weakest cases.
 
-## Useful Pieces
+## Code Layout
 
-- Includes extended examples for bounds checks, including `surge` and `degraded`.
-- Documents low-level invariants tradeoffs in `docs/operations.md`.
-- Runs locally with a single verification command and no external credentials.
-- Stores project constants and verification metadata in `metadata/project.json`.
-- Adds a repository audit script that checks structure before running the language verifier.
+The core code exposes a scoring path and the added review layer uses `signal`, `slack`, `drag`, and `confidence`. The domain terms are `allocation pressure`, `dirty state`, `guard slack`, and `layout drift`.
 
-## Architecture Notes
+The R addition stays small enough to inspect in one sitting.
 
-The design is intentionally direct: parse or construct a signal, score it, classify it, and verify the expected branch. This makes the repository useful for studying systems programming behavior without needing a service or database unless the language project itself is SQL. The R version keeps the model as simple functions over named lists for easy analysis use.
-
-## Tooling
-
-The only required setup is the local R toolchain. After cloning, stay in the repo root so fixture paths resolve correctly.
-
-## Case Study
-
-`boundary` is the first example I would inspect because it lands on the `review` path with a score of 108. The broader file also keeps `degraded` at -16 and `surge` at 251, which gives the model a useful low-to-high spread.
-
-## Local Workflow
+## Run The Check
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-This runs the language-level build or test path against the compact fixture set.
+## Regression Path
 
-## Quality Gate
+The same command runs the local verification path. The highest-scoring domain case is `stress` at 243, which lands in `ship`. The most cautious case is `edge` at 164, which lands in `ship`.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
-```
+## Future Work
 
-The audit command checks repository structure and README constraints before it delegates to the verifier.
-
-## Expansion Ideas
-
-- Add a short report command that prints the score breakdown for a single scenario.
-- Add malformed input fixtures so the failure path is as visible as the happy path.
-- Split the scoring constants into a typed configuration object and validate it before use.
-- Add one more systems programming fixture that focuses on a malformed or borderline input.
-
-## Scope
-
-This code is local-first. It makes no claim about deployed usage and avoids credentials, hosted state, and environment-specific setup.
+This remains a local project with deterministic fixtures. It does not depend on credentials, hosted services, or live data. Future work should add richer malformed inputs before widening the public API.
