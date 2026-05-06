@@ -1,0 +1,17 @@
+{
+  "repo": "orbit-sys-io-field",
+  "thresholds": {
+    "signal": 4,
+    "slack": 2,
+    "confidence": 1,
+    "drag": 5,
+    "ship": 201,
+    "watch": 111
+  },
+  "terms": [
+    "allocation pressure",
+    "dirty state",
+    "guard slack",
+    "layout drift"
+  ]
+}
