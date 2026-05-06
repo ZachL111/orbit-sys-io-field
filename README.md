@@ -1,43 +1,67 @@
 # orbit-sys-io-field
 
-orbit-sys-io-field is a R project for systems programming. It focuses on this technical goal: Build an R toolkit that studies io behavior through transition tables, with invalid-transition tests and single-node deterministic mode.
+`orbit-sys-io-field` treats systems programming as a local verification problem. The R implementation is intentionally narrow, but the fixtures and notes make the behavior explicit.
 
-## Why it exists
+## Orbit Sys IO Field Checkpoints
 
-Small engineering tools are easiest to trust when their rules are explicit, testable, and cheap to run locally. This repository packages a focused model with fixture data and a local verification path so behavior can be reviewed without external services.
+Treat the compact fixture as the contract and the extended examples as a scratchpad. The code should stay boring enough that a change in behavior is obvious from the test output.
 
-## Features
+## What This Is For
 
-- Deterministic policy scoring over fixture scenarios.
-- Clear accept or review decisions based on a documented threshold.
-- A command-line or local test path for quick validation.
-- Golden fixture data for repeatable checks.
-- Minimal dependencies and a compact project layout.
+I use this kind of project to make a rule visible before adding more machinery around it. The important part here is not the size of the codebase. It is that the input signals, scoring rule, fixture data, and expected output can all be checked in one sitting.
+
+## Project Layout
+
+- `tests`: verification harness
+- `fixtures`: compact golden scenarios
+- `examples`: expanded scenario set
+- `metadata`: project constants and verification metadata
+- `docs`: operations and extension notes
+- `scripts`: local verification and audit commands
+
+## Useful Pieces
+
+- Includes extended examples for bounds checks, including `surge` and `degraded`.
+- Documents low-level invariants tradeoffs in `docs/operations.md`.
+- Runs locally with a single verification command and no external credentials.
+- Stores project constants and verification metadata in `metadata/project.json`.
+- Adds a repository audit script that checks structure before running the language verifier.
 
 ## Architecture Notes
 
-The core module exposes a small scoring API. Inputs are simple numeric signals: demand, capacity, latency, risk, and weight. The score uses a threshold of 162, risk penalty 7, latency penalty 2, and weight bonus 6. Tests exercise the public API against the fixture cases in `fixtures/cases.csv`.
+The design is intentionally direct: parse or construct a signal, score it, classify it, and verify the expected branch. This makes the repository useful for studying systems programming behavior without needing a service or database unless the language project itself is SQL. The R version keeps the model as simple functions over named lists for easy analysis use.
 
-## Setup
+## Tooling
 
-Install the R toolchain and run commands from the repository root.
+The only required setup is the local R toolchain. After cloning, stay in the repo root so fixture paths resolve correctly.
 
-## Usage
+## Case Study
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
-```
+`boundary` is the first example I would inspect because it lands on the `review` path with a score of 108. The broader file also keeps `degraded` at -16 and `surge` at 251, which gives the model a useful low-to-high spread.
 
-The verification script builds or runs the project and checks the fixture decisions.
-
-## Tests
+## Local Workflow
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-## Limitations And Roadmap
+This runs the language-level build or test path against the compact fixture set.
 
-- The fixture set is intentionally small so it can be audited by hand.
-- Future work could add richer domain-specific input adapters.
-- The model is a local demonstration and does not claim production use.
+## Quality Gate
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
+```
+
+The audit command checks repository structure and README constraints before it delegates to the verifier.
+
+## Expansion Ideas
+
+- Add a short report command that prints the score breakdown for a single scenario.
+- Add malformed input fixtures so the failure path is as visible as the happy path.
+- Split the scoring constants into a typed configuration object and validate it before use.
+- Add one more systems programming fixture that focuses on a malformed or borderline input.
+
+## Scope
+
+This code is local-first. It makes no claim about deployed usage and avoids credentials, hosted state, and environment-specific setup.
